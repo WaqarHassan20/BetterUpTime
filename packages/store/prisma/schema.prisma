@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String    @id @default(uuid())
+  username String    @unique
+  password String
+  websites Website[]
+}
+
+model Website {
+  id        String        @id @default(uuid())
+  url       String
+  timeAdded DateTime
+  ticks     WebsiteTick[] 
+  User      User?         @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model Region {
+  id          String        @id @default(uuid())
+  name        String
+  WebsiteTick WebsiteTick[]
+}
+
+model WebsiteTick {
+  id               String        @id @default(uuid())
+  response_time_ms Int
+  status           WebsiteStatus
+  website          Website?      @relation(fields: [website_id], references: [id])
+  region           Region        @relation(fields: [region_id], references: [id])
+  region_id        String
+  website_id       String
+  createdAt        DateTime      @default(now())
+}
+
+enum WebsiteStatus {
+  Up
+  Down
+  Unknown
+}
+
+// This schema represents a system that keeps track of the health or performance of different websites over time, across different regions. It includes three main data structures: Website, Region, and WebsiteTick.
+
+// A Website is something you want to monitor — like google.com or myshop.com. Each website has a unique ID, its URL, a timestamp of when it was added, and a list of performance records (called ticks).
+
+// A Region is a physical or logical location (like "Asia", "Europe", or "US-East"). Each region also has a unique ID and a name. The system checks the websites from different regions to see how they're performing from those locations.
+
+// The WebsiteTick is like a snapshot or log entry that records how a website performed at a certain moment. Each tick includes:
+
+// A unique ID,
+
+// The response time (how many milliseconds it took the website to respond),
+
+// The status of the website (whether it was "Up", "Down", or "Unknown"),
+
+// And it connects to both a specific website and a specific region — showing where the check was done and which website was being checked.
+
+// The schema also defines an enum called WebsiteStatus, which simply sets fixed possible values for the status of a website — either it's working (Up), not working (Down), or its status is unclear (Unknown).
+
+// Overall, this schema helps build a system where you can monitor websites from different regions, record their response times, and know whether they were accessible or not — all organized in a structured and trackable way.
